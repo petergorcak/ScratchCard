@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">ScratchCard</string>
+    <string name="cd_go_back">Go Back</string>
+    <string name="activation_screen">Activation Screeen</string>
+    <string name="home_screen">Home Screen</string>
+    <string name="scratch_screen">Scratch Screen</string>
+    <string name="button_scratch">Scratch card</string>
+    <string name="button_activate">Activate card</string>
+    <string name="unscratched">Unscratched</string>
+    <string name="scratched">Scratched</string>
+    <string name="activated">Activated</string>
+    <string name="error_already_scratched">Card has already been scratched</string>
+    <string name="error_scratching">Failed to scratch Card</string>
+    <string name="success_scratch">Card has been scratched</string>
+    <string name="error_already_activated">Card has already been activated</string>
+    <string name="error_need_scratch">Card must be scratched first</string>
+    <string name="success_activation">Card has been activated</string>
+    <string name="error_activating_title">Activation error</string>
+    <string name="error_activating">Failed to activate Card</string>
+    <string name="ok">Ok</string>
+</resources>
