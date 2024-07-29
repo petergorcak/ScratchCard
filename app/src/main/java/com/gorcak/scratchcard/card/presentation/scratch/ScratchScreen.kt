@@ -82,7 +82,7 @@ private fun ScratchScreen(
                 modifier = Modifier.fillMaxWidth(),
                 label = stringResource(id = R.string.button_scratch),
                 isLoading = state.isScratching,
-                isEnabled = !state.isScratching,
+                isEnabled = !state.isScratching && state.canScratch,
                 onClick = { onAction(ScratchAction.Scratch) }
             )
         }

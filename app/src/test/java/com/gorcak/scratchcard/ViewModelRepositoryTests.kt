@@ -3,9 +3,10 @@ package com.gorcak.scratchcard
 import com.gorcak.scratchcard.card.data.MemoryStorage
 import com.gorcak.scratchcard.card.data.RepositoryImpl
 import com.gorcak.scratchcard.card.data.toVersion
-import com.gorcak.scratchcard.card.domain.ActivationValidator
+import com.gorcak.scratchcard.card.domain.ScratchCardValidator
 import com.gorcak.scratchcard.card.domain.DataResult
 import com.gorcak.scratchcard.card.domain.ScratchCardState
+import com.gorcak.scratchcard.card.presentation.MainAction
 import com.gorcak.scratchcard.card.presentation.MainViewModel
 import com.gorcak.scratchcard.card.presentation.scratch.ScratchAction
 import com.gorcak.scratchcard.card.presentation.scratch.ScratchViewModel
@@ -30,14 +31,14 @@ class ViewModelRepositoryTests {
     fun tearDown() {
         Dispatchers.resetMain()
     }
-
+    private val code = "12345"
     private val service = FakeApiService()
     private val storage = MemoryStorage()
-    private val validator = ActivationValidator()
+    private val validator = ScratchCardValidator()
     private val scratchCardRepository = RepositoryImpl(
         storage = storage,
         apiService = service,
-        activationValidator = validator
+        scratchCardValidator = validator
     )
 
     @Test
@@ -52,7 +53,6 @@ class ViewModelRepositoryTests {
 
     @Test
     fun testSuccessRepositoryResultForActivation() = runTest {
-        val code = "12345"
         service.responseToReturn = validResponse
         storage.setScratched(code)
         val result = scratchCardRepository.activateCard(code)
@@ -64,23 +64,25 @@ class ViewModelRepositoryTests {
     fun testFailedViewModelActivationFromUnscratchedState() = runTest {
         val viewModel = MainViewModel(
             storage = storage,
-            repository = scratchCardRepository
+            repository = scratchCardRepository,
+            validator = validator
         )
-        viewModel.activateCard()
+        viewModel.onAction(MainAction.Activate)
         Assert.assertEquals(ScratchCardState.Unscratched, viewModel.state.scratchCardState)
     }
 
     @Test
     fun testSuccessViewModelActivationFromScratchedState() = runTest {
-        val code = "12345"
+
         val viewModel = MainViewModel(
             storage = storage,
-            repository = scratchCardRepository
+            repository = scratchCardRepository,
+            validator = validator
         )
         service.responseToReturn = validResponse
         storage.setScratched(code)
 
-        viewModel.activateCard()
+        viewModel.onAction(MainAction.Activate)
         delay(1000)
         Assert.assertEquals(ScratchCardState.Activated(code), storage.scratchCardState.value)
         Assert.assertEquals(ScratchCardState.Activated(code), viewModel.state.scratchCardState)
@@ -90,7 +92,8 @@ class ViewModelRepositoryTests {
     fun testFailedRepeatedScratch() = runTest {
         val viewModel = ScratchViewModel(
             storage = storage,
-            repository = scratchCardRepository
+            repository = scratchCardRepository,
+            validator = validator
         )
         service.responseToReturn = validResponse
 
@@ -118,5 +121,30 @@ class ViewModelRepositoryTests {
     fun testValidatorWithInvalidActivationResponse() {
         val result = validator.isActivationValid(invalidResponse.toVersion())
         Assert.assertFalse(result)
+    }
+
+    @Test
+    fun testValidatorForSuccessfulScratch() {
+        val result = validator.canBeScratched(ScratchCardState.Unscratched)
+        Assert.assertTrue(result)
+    }
+
+    @Test
+    fun testValidatorForUnsuccessfulScratch() {
+        val result = validator.canBeScratched(ScratchCardState.Scratched(code))
+        Assert.assertFalse(result)
+    }
+
+    @Test
+    fun testValidatorForSuccessfulActivation() {
+        val result = validator.canBeActivated(ScratchCardState.Scratched(code))
+        Assert.assertTrue(result)
+    }
+
+    @Test
+    fun testValidatorForUnsuccessfulActivation() {
+        val result = validator.canBeActivated(ScratchCardState.Unscratched)
+        Assert.assertFalse(result)
+
     }
 }

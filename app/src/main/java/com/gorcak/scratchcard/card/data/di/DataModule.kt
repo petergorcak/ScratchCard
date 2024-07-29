@@ -3,7 +3,7 @@ package com.gorcak.scratchcard.card.data.di
 import com.gorcak.scratchcard.core.BASE_URL
 import com.gorcak.scratchcard.card.data.MemoryStorage
 import com.gorcak.scratchcard.card.data.RepositoryImpl
-import com.gorcak.scratchcard.card.domain.ActivationValidator
+import com.gorcak.scratchcard.card.domain.ScratchCardValidator
 import com.gorcak.scratchcard.card.domain.Repository
 import com.gorcak.scratchcard.card.domain.Storage
 import okhttp3.OkHttpClient
@@ -43,7 +43,7 @@ fun provideService(retrofit: Retrofit): com.gorcak.scratchcard.card.data.ApiServ
 val dataModule = module {
     singleOf(::MemoryStorage).bind<Storage>()
     singleOf(::RepositoryImpl).bind<Repository>()
-    singleOf(::ActivationValidator)
+    singleOf(::ScratchCardValidator)
     single { provideHttpClient() }
     single { provideConverterFactory() }
     single { provideRetrofit(get(), get()) }

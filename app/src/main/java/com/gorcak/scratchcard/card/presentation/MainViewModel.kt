@@ -8,8 +8,9 @@ import androidx.lifecycle.viewModelScope
 import com.gorcak.scratchcard.R
 import com.gorcak.scratchcard.card.domain.DataResult
 import com.gorcak.scratchcard.card.domain.Repository
-import com.gorcak.scratchcard.card.domain.ScratchCardState
+import com.gorcak.scratchcard.card.domain.ScratchCardValidator
 import com.gorcak.scratchcard.card.domain.Storage
+import com.gorcak.scratchcard.card.presentation.scratch.ScratchEvent
 import com.gorcak.scratchcard.core.StringValue
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.launchIn
@@ -19,7 +20,8 @@ import kotlinx.coroutines.launch
 
 class MainViewModel(
     private val storage: Storage,
-    private val repository: Repository
+    private val repository: Repository,
+    private val validator: ScratchCardValidator
 ) : ViewModel() {
 
     private val eventChannel = Channel<MainEvent>()
@@ -34,25 +36,23 @@ class MainViewModel(
         storage.scratchCardState
             .onEach { newCard ->
                 state = state.copy(
-                    scratchCardState = newCard
+                    scratchCardState = newCard,
+                    canBeActivated = validator.canBeActivated(newCard)
                 )
             }
             .launchIn(viewModelScope)
     }
 
-
-    fun activateCard() {
-        if(state.isActivating){
-            return
-        }
-        viewModelScope.launch {
-            when (val card = state.scratchCardState) {
-                is ScratchCardState.Activated -> {
-                    eventChannel.send(MainEvent.Error(StringValue.Resource(R.string.error_already_activated)))
-                }
-                is ScratchCardState.Scratched -> {
+    fun onAction(action: MainAction) {
+        when (action) {
+            MainAction.Activate -> {
+                viewModelScope.launch {
+                    if(!validator.canBeActivated(state.scratchCardState)){
+                        eventChannel.send(MainEvent.Error(StringValue.Resource(R.string.error_activating)))
+                        return@launch
+                    }
                     state = state.copy(isActivating = true)
-                    val result = repository.activateCard(card.code)
+                    val result = repository.activateCard(state.scratchCardState.code())
                     state = state.copy(isActivating = false)
                     when (result) {
                         is DataResult.Error -> {
@@ -64,12 +64,10 @@ class MainViewModel(
                         }
                     }
                 }
-                ScratchCardState.Unscratched -> {
-                    eventChannel.send(MainEvent.Error(StringValue.Resource(R.string.error_need_scratch)))
-                }
             }
         }
     }
+
 
 
 }

@@ -14,7 +14,7 @@ class MemoryStorage : Storage {
         _scratchCardState.value = ScratchCardState.Scratched(code)
     }
 
-    override suspend fun setActivated(code: String) {
+    override suspend fun setActivated(code: String) { 
         _scratchCardState.value = ScratchCardState.Activated(code)
     }
 }

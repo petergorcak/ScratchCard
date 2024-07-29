@@ -1,7 +1,7 @@
 package com.gorcak.scratchcard.card.data
 
 import com.gorcak.scratchcard.R
-import com.gorcak.scratchcard.card.domain.ActivationValidator
+import com.gorcak.scratchcard.card.domain.ScratchCardValidator
 import com.gorcak.scratchcard.card.domain.DataResult
 import com.gorcak.scratchcard.card.domain.ErrorData
 import com.gorcak.scratchcard.card.domain.Repository
@@ -18,13 +18,13 @@ import kotlin.coroutines.cancellation.CancellationException
 class RepositoryImpl(
     private val storage: Storage,
     private val apiService: ApiService,
-    private val activationValidator: ActivationValidator
+    private val scratchCardValidator: ScratchCardValidator
 ) : Repository {
 
     override suspend fun scratchCard(): DataResult<Unit> {
         return coroutineScope {
             try {
-                delay((2000L..4000L).random())
+                delay((2000L..3000L).random())
                 ensureActive()
                 val result = UUID.randomUUID()
                 storage.setScratched(result.toString())
@@ -47,11 +47,14 @@ class RepositoryImpl(
     override suspend fun activateCard(code: String) : DataResult<Unit> {
         return coroutineScope {
             try {
+                if(code.isEmpty()){
+                    throw RuntimeException("Trying to activate card with empty code")
+                }
                 val resultCode =  apiService.getVersion(code).toVersion()
-                if(activationValidator.isActivationValid(resultCode)){
+                if(scratchCardValidator.isActivationValid(resultCode)){
                     storage.setActivated(code)
                     DataResult.Success(Unit)
-                }else {
+                } else {
                     DataResult.Error(
                         error = ErrorData(
                             message = StringValue.Resource(R.string.error_activating)

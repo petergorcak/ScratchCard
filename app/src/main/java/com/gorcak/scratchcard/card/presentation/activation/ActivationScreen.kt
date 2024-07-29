@@ -18,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gorcak.scratchcard.R
+import com.gorcak.scratchcard.card.presentation.MainAction
 import com.gorcak.scratchcard.card.presentation.MainEvent
 import com.gorcak.scratchcard.card.presentation.MainState
 import com.gorcak.scratchcard.card.presentation.MainViewModel
@@ -52,7 +53,6 @@ fun ActivationScreenRoot(
         AlertDialog(
             onDismissRequest = { showErrorModal.value = null },
             confirmButton = {
-
                 Button(
                     onClick = { showErrorModal.value = null }
                 ) {
@@ -82,13 +82,11 @@ fun ActivationScreenRoot(
         state = mainViewModel.state,
         onAction = {
             when (it) {
-                ActivationAction.OnBack -> {
+                ActivationScreenAction.OnBack -> {
                     onBack()
                 }
+                ActivationScreenAction.Activate -> mainViewModel.onAction(MainAction.Activate)
 
-                ActivationAction.Activate -> {
-                    mainViewModel.activateCard()
-                }
             }
         }
     )
@@ -97,14 +95,14 @@ fun ActivationScreenRoot(
 @Composable
 private fun ActivationScreen(
     state: MainState,
-    onAction: (ActivationAction) -> Unit
+    onAction: (ActivationScreenAction) -> Unit
 ) {
     ScratchCardScaffold(
         appBar = {
             ScratchCardAppBar(
                 title = stringResource(id = R.string.activation_screen),
                 onBackClick = {
-                    onAction(ActivationAction.OnBack)
+                    onAction(ActivationScreenAction.OnBack)
                 }
             )
         },
@@ -115,9 +113,9 @@ private fun ActivationScreen(
         LoadingButton(
             label = stringResource(id = R.string.button_activate),
             isLoading = state.isActivating,
-            isEnabled = !state.isActivating,
+            isEnabled = !state.isActivating && state.canBeActivated,
             onClick = {
-                onAction(ActivationAction.Activate)
+                onAction(ActivationScreenAction.Activate)
             }
         )
 
