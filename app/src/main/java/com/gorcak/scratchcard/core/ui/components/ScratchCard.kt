@@ -1,6 +1,7 @@
 package com.gorcak.scratchcard.core.ui.components
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,8 +38,22 @@ fun ScratchCard(
     modifier: Modifier = Modifier,
     data: ScratchCardState
 ) {
+    val statusColor = when (data) {
+        ScratchCardState.Unscratched -> MaterialTheme.colorScheme.secondary.copy(
+            alpha = 0.3f
+        )
+
+        is ScratchCardState.Scratched -> MaterialTheme.colorScheme.tertiary.copy(
+            alpha = 0.4f
+        )
+        is ScratchCardState.Activated -> MaterialTheme.colorScheme.primary
+    }
     Card(
         modifier = modifier.fillMaxWidth(),
+        border = BorderStroke(width = 2.dp, color = statusColor),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 5.dp
+        )
     ) {
         Column(
             modifier = Modifier
@@ -50,11 +66,9 @@ fun ScratchCard(
                 modifier = Modifier
                     .animateContentSize()
                     .clip(RoundedCornerShape(20.dp))
-                    .background(color = when(data) {
-                        ScratchCardState.Unscratched -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
-                        is ScratchCardState.Scratched -> MaterialTheme.colorScheme.secondary
-                        is ScratchCardState.Activated -> MaterialTheme.colorScheme.primary
-                    })
+                    .background(
+                        color = statusColor
+                    )
                     .padding(vertical = 8.dp, horizontal = 16.dp)
             ) {
                 Text(
@@ -106,8 +120,18 @@ fun ScratchCard(
 @Composable
 private fun ScratchCardPreview() {
     ScratchCardTheme {
-        ScratchCard(
-            data = ScratchCardState.Activated(DUMMY_ID_PLACEHOLDER)
-        )
+        Column {
+
+            ScratchCard(
+                data = ScratchCardState.Unscratched
+            )
+            ScratchCard(
+                data = ScratchCardState.Scratched(DUMMY_ID_PLACEHOLDER)
+            )
+            ScratchCard(
+                data = ScratchCardState.Activated(DUMMY_ID_PLACEHOLDER)
+            )
+        }
+
     }
 }

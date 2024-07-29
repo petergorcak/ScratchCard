@@ -69,7 +69,7 @@ class RepositoryImpl(
                 DataResult.Error(
                     error = ErrorData(
                         exception = e,
-                        message = StringValue.Resource(R.string.error_scratching)
+                        message = StringValue.Resource(R.string.error_activating)
                     )
                 )
             }

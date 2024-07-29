@@ -43,11 +43,9 @@ class ViewModelRepositoryTests {
 
     @Test
     fun testFailedRepositoryResultForActivation() = runTest {
-        val code = "12345"
         service.responseToReturn = invalidResponse
         storage.setScratched(code)
         val result = scratchCardRepository.activateCard(code)
-
         Assert.assertTrue(result is DataResult.Error)
     }
 
@@ -56,7 +54,6 @@ class ViewModelRepositoryTests {
         service.responseToReturn = validResponse
         storage.setScratched(code)
         val result = scratchCardRepository.activateCard(code)
-
         Assert.assertTrue(result is DataResult.Success)
     }
 
@@ -106,7 +103,6 @@ class ViewModelRepositoryTests {
         // first scratch
         viewModel.onAction(ScratchAction.Scratch)
         delay(5000)
-
         Assert.assertEquals(beforeSecondScratch, storage.scratchCardState.value)
         Assert.assertEquals(beforeSecondScratch, viewModel.state.scratchData)
     }
@@ -145,6 +141,14 @@ class ViewModelRepositoryTests {
     fun testValidatorForUnsuccessfulActivation() {
         val result = validator.canBeActivated(ScratchCardState.Unscratched)
         Assert.assertFalse(result)
-
     }
+
+    @Test
+    fun testCardStateThrowsOnGettingCodeFromUnscratchedState() {
+        val state = ScratchCardState.Unscratched
+        Assert.assertThrows(RuntimeException::class.java) {
+            state.code()
+        }
+    }
+
 }

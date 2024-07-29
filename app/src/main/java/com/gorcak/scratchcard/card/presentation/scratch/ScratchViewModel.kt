@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.gorcak.scratchcard.R
 import com.gorcak.scratchcard.card.domain.DataResult
 import com.gorcak.scratchcard.card.domain.Repository
-import com.gorcak.scratchcard.card.domain.ScratchCardState
 import com.gorcak.scratchcard.card.domain.ScratchCardValidator
 import com.gorcak.scratchcard.card.domain.Storage
 import com.gorcak.scratchcard.core.StringValue

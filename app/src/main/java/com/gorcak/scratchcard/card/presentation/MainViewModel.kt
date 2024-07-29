@@ -10,7 +10,6 @@ import com.gorcak.scratchcard.card.domain.DataResult
 import com.gorcak.scratchcard.card.domain.Repository
 import com.gorcak.scratchcard.card.domain.ScratchCardValidator
 import com.gorcak.scratchcard.card.domain.Storage
-import com.gorcak.scratchcard.card.presentation.scratch.ScratchEvent
 import com.gorcak.scratchcard.core.StringValue
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.launchIn
@@ -31,7 +30,6 @@ class MainViewModel(
         private set
 
 
-
     init {
         storage.scratchCardState
             .onEach { newCard ->
@@ -44,30 +42,31 @@ class MainViewModel(
     }
 
     fun onAction(action: MainAction) {
-        when (action) {
-            MainAction.Activate -> {
-                viewModelScope.launch {
-                    if(!validator.canBeActivated(state.scratchCardState)){
+        viewModelScope.launch {
+            when (action) {
+                MainAction.Activate -> {
+                    if (!validator.canBeActivated(state.scratchCardState) || state.isActivating) {
                         eventChannel.send(MainEvent.Error(StringValue.Resource(R.string.error_activating)))
-                        return@launch
-                    }
-                    state = state.copy(isActivating = true)
-                    val result = repository.activateCard(state.scratchCardState.code())
-                    state = state.copy(isActivating = false)
-                    when (result) {
-                        is DataResult.Error -> {
-                            eventChannel.send(MainEvent.Error(result.error.message))
-                        }
-
-                        is DataResult.Success -> {
-                            eventChannel.send(MainEvent.ActivationSuccess)
-                        }
+                    } else {
+                        activateCard()
                     }
                 }
             }
         }
     }
 
+    private suspend fun activateCard() {
+        state = state.copy(isActivating = true)
+        val result = repository.activateCard(state.scratchCardState.code())
+        state = state.copy(isActivating = false)
+        when (result) {
+            is DataResult.Error -> {
+                eventChannel.send(MainEvent.Error(result.error.message))
+            }
 
-
+            is DataResult.Success -> {
+                eventChannel.send(MainEvent.ActivationSuccess)
+            }
+        }
+    }
 }

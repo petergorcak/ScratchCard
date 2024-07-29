@@ -58,7 +58,6 @@ fun ActivationScreenRoot(
                 ) {
                     Text(text = stringResource(id = R.string.ok))
                 }
-
             },
             title = {
                 Text(
@@ -85,6 +84,7 @@ fun ActivationScreenRoot(
                 ActivationScreenAction.OnBack -> {
                     onBack()
                 }
+
                 ActivationScreenAction.Activate -> mainViewModel.onAction(MainAction.Activate)
 
             }

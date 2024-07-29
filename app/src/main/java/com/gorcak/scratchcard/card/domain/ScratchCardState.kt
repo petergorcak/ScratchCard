@@ -2,7 +2,7 @@ package com.gorcak.scratchcard.card.domain
 
 sealed interface ScratchCardState {
 
-    fun code() : String = ""
+    fun code() : String = throw RuntimeException("Called in wrong card state: [$this]")
 
     data object Unscratched : ScratchCardState
 
